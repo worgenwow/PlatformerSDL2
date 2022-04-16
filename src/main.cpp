@@ -1,8 +1,11 @@
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 #include <stdio.h>
 
 #include <window.h>
 #include <timer.h>
+#include <collider.h>
+#include <entity.h>
 // Screen dimension constants
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
@@ -20,6 +23,7 @@ struct GameData
 {
 	Window& window;
 	Timer& stepTimer;
+	Entity& testEntity;
 };
 
 // Returns false on error
@@ -31,9 +35,22 @@ bool init(Window& window)
 		return false;
 	}
 
+	//Set texture filtering to linear
+	if(!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1"))
+	{
+		printf("Warning: Linear texture filtering not enabled.");
+	}
+
 	if(!window.create("Platformer", SCREEN_WIDTH, SCREEN_HEIGHT))
 	{
 		printf("Window creation failed.\n");
+		return false;
+	}
+
+	int imgFlags = IMG_INIT_PNG;
+	if(!(IMG_Init(imgFlags) & imgFlags))
+	{
+		printf( "Failed to initialise SDL_image. SDL_image Error: %s\n", IMG_GetError() );
 		return false;
 	}
 	return true;
@@ -86,9 +103,9 @@ void handleMovement(GameData& gameData, KeyData& keyData)
 }
 
 // handle all the rendering in the game
-void handleRendering(GameData& gamedata)
+void handleRendering(GameData& gameData)
 {
-
+	
 }
 
 void gameLoop(Window& window)
@@ -98,11 +115,15 @@ void gameLoop(Window& window)
 	KeyData keyData;
 
 	Timer stepTimer;
+	Entity testEntity({0,0});
+	SDL_Color white = {0xFF, 0xFF, 0xFF, 0xFF};
+	testEntity.loadSprite(window.getRenderer(), "Assets/test.png", white);
 
 	GameData gameData
 	{
 		window,
 		stepTimer,
+		testEntity,
 	};
 
 	while(!exit)
@@ -111,7 +132,7 @@ void gameLoop(Window& window)
 		handleMovement(gameData, keyData);
 
 		window.clearRender();
-		handleRendering(gameData);
+		window.renderEntity(testEntity);
 		window.updateRender();
 	}
 }
@@ -122,10 +143,11 @@ int main(int argc, char* args[])
 	if(!init(window))
 	{
 		printf("Failed to initialise.\n");
-		return 0;
+		return 1;
 	}
 	gameLoop(window);
 
+	IMG_Quit();
 	SDL_Quit();
 	return 0;
 }

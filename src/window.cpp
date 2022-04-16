@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include <window.h>
+#include <entity.h>
 
 // Runs when Window is created
 Window::Window()
@@ -33,7 +34,7 @@ bool Window::create(const char* title, int width, int height)
     if(mWindow == NULL)
     {
         printf("Failed to create SDL window. SDL Error: %s\n", SDL_GetError());
-        return false;
+        return false; // can't create renderer without window
     }
 
     mRenderer = SDL_CreateRenderer(mWindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
@@ -46,7 +47,7 @@ bool Window::create(const char* title, int width, int height)
     return true;
 }
 
-void Window::renderRect(SDL_Rect rect, SDL_Color color, bool filled)
+void Window::renderRect(SDL_Rect& rect, SDL_Color& color, bool filled)
 {
     SDL_SetRenderDrawColor(mRenderer, color.r, color.g, color.b, color.a);
     if(filled)
@@ -57,6 +58,19 @@ void Window::renderRect(SDL_Rect rect, SDL_Color color, bool filled)
     {
         SDL_RenderDrawRect(mRenderer, &rect);
     }
+}
+
+void Window::renderEntity(Entity& entity)
+{
+    SDL_Rect renderQuad;
+    renderQuad.x = entity.getPosition().x;
+    renderQuad.y = entity.getPosition().y;
+
+    Sprite* sprite = entity.getSprite();
+    renderQuad.w = sprite->getWidth();
+    renderQuad.h = sprite->getHeight();
+
+    SDL_RenderCopy(mRenderer, sprite->getTexture(), NULL, &renderQuad);
 }
 
 void Window::clearRender()
@@ -78,4 +92,9 @@ int Window::getHeight()
 int Window::getWidth()
 {
     return mWidth;
+}
+
+SDL_Renderer* Window::getRenderer()
+{
+    return mRenderer;
 }
