@@ -6,25 +6,12 @@
 #include <timer.h>
 #include <collider.h>
 #include <entity.h>
+#include <gameData.h>
+#include <keyData.h>
+#include <player.h>
 // Screen dimension constants
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
-
-struct KeyData
-{
-bool 
-	upKeyDown = false,
-	wKeyDown  = false,
-	downKeyDown = false,
-	sKeyDown = false;
-};
-
-struct GameData
-{
-	Window& window;
-	Timer& stepTimer;
-	Entity& testEntity;
-};
 
 // Returns false on error
 bool init(Window& window)
@@ -61,14 +48,14 @@ void keyEvents(SDL_Keycode keyCode, KeyData& keyData, bool keyDown)
 {
 	switch(keyCode)
 	{
-		case SDLK_UP:
-			keyData.upKeyDown = keyDown;
+		case SDLK_d:
+			keyData.dKeyDown = keyDown;
 			break;
 		case SDLK_w:
 			keyData.wKeyDown = keyDown;
 			break;
-		case SDLK_DOWN:
-			keyData.downKeyDown = keyDown;
+		case SDLK_a:
+			keyData.aKeyDown = keyDown;
 			break;
 		case SDLK_s:
 			keyData.sKeyDown = keyDown;
@@ -76,7 +63,7 @@ void keyEvents(SDL_Keycode keyCode, KeyData& keyData, bool keyDown)
 	}
 }
 
-void handleEvents(SDL_Event e, bool& exit, KeyData& keyData)
+void handleEvents(SDL_Event& e, bool& exit, KeyData& keyData)
 {
 	while(SDL_PollEvent(&e)!=0)
 	{
@@ -98,14 +85,25 @@ void handleEvents(SDL_Event e, bool& exit, KeyData& keyData)
 // handle all the movement in the game
 void handleMovement(GameData& gameData, KeyData& keyData)
 {
+	float timeStep = 0;
+	timeStep = gameData.stepTimer.getTicks()/1000.f;
+
+	gameData.player.updateVelocity(keyData);
+	gameData.player.updatePos(gameData, timeStep);
 
 	gameData.stepTimer.Start();
 }
 
 // handle all the rendering in the game
-void handleRendering(GameData& gameData)
+void handleRendering(GameData& gameData, Collider& floor)
 {
-	
+	SDL_Color white = {0xFF, 0xFF, 0xFF, 0xFF};
+	SDL_Rect floorRect = *floor.getRect();
+
+	gameData.window.clearRender();
+	gameData.window.renderEntity(gameData.player);
+	gameData.window.renderRect(floorRect, white, true);
+	gameData.window.updateRender();
 }
 
 void gameLoop(Window& window)
@@ -115,31 +113,33 @@ void gameLoop(Window& window)
 	KeyData keyData;
 
 	Timer stepTimer;
-	Entity testEntity({0,0});
+	Player player({0,0}, true);
 	SDL_Color white = {0xFF, 0xFF, 0xFF, 0xFF};
-	testEntity.loadSprite(window.getRenderer(), "Assets/test.png", white);
+	player.loadSprite(window.getRenderer(), "Assets/player2.png", white); // 9x27
+	Collider collider({0,0,32,32});
+	player.addCollider(collider);
+
+	Collider floor({0,SCREEN_HEIGHT-100,SCREEN_WIDTH,100});
 
 	GameData gameData
 	{
 		window,
 		stepTimer,
-		testEntity,
+		player,
+		{player.getCollider(), &floor},
 	};
 
 	while(!exit)
 	{
 		handleEvents(e, exit, keyData);
 		handleMovement(gameData, keyData);
-
-		window.clearRender();
-		window.renderEntity(testEntity);
-		window.updateRender();
+		handleRendering(gameData, floor);
 	}
 }
 
 int main(int argc, char* args[])
 {
-	Window window({0xFF, 0xFF, 0xFF, 0xFF}); // Constructs a window with white bg color
+	Window window({0x00, 0xFF, 0xFF, 0xFF}); // Constructs a window with white bg color
 	if(!init(window))
 	{
 		printf("Failed to initialise.\n");

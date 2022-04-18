@@ -63,8 +63,8 @@ void Window::renderRect(SDL_Rect& rect, SDL_Color& color, bool filled)
 void Window::renderEntity(Entity& entity)
 {
     SDL_Rect renderQuad;
-    renderQuad.x = entity.getPosition().x;
-    renderQuad.y = entity.getPosition().y;
+    renderQuad.x = (int) entity.getPosition().x;
+    renderQuad.y = (int) entity.getPosition().y;
 
     Sprite* sprite = entity.getSprite();
     renderQuad.w = sprite->getWidth();
@@ -84,12 +84,12 @@ void Window::updateRender()
     SDL_RenderPresent(mRenderer);
 }
 
-int Window::getHeight()
+int Window::getHeight() const
 {
     return mHeight;
 }
 
-int Window::getWidth()
+int Window::getWidth() const
 {
     return mWidth;
 }

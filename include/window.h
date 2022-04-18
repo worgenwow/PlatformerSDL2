@@ -19,7 +19,7 @@ class Window
         void renderEntity(Entity& entity);
         void clearRender();
         void updateRender();
-        int getHeight();
-        int getWidth();
+        int getHeight() const;
+        int getWidth() const;
         SDL_Renderer* getRenderer();
 };
