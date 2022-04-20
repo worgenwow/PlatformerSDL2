@@ -15,8 +15,8 @@ class Window
         Window(SDL_Color backgroundColor);
         ~Window();
         bool create(const char* title, int width, int height);
-        void renderRect(SDL_Rect& rect, SDL_Color& color, bool filled);
-        void renderEntity(Entity& entity);
+        void renderRect(SDL_Rect* rect, SDL_Color& color, bool filled);
+        void renderEntity(Entity* entity);
         void clearRender();
         void updateRender();
         int getHeight() const;

@@ -3,6 +3,7 @@
 #include <collider.h>
 #include <vector.h>
 #include <gameData.h>
+#include <entity.h>
 
 Collider::Collider(){}
 
@@ -49,10 +50,10 @@ bool Collider::checkCollision(Collider* collider)
 Collider* Collider::checkAllCollisions(GameData& gameData)
 {
   Collider* currentCollider;
-  for (int i = 0; i < gameData.colliderAmount; i++)
+  for (int i = 0; i < gameData.entityAmount; i++)
   {
-    currentCollider = gameData.colliders[i];
-    if(currentCollider == this)
+    currentCollider = gameData.entities[i]->getCollider();
+    if(currentCollider == this || currentCollider == NULL)
     {
       continue;
     }
@@ -73,5 +74,5 @@ Collider* Collider::checkAllCollisions(GameData& gameData)
 SDL_Rect* Collider::getRect()
 {
   return &mCollider;
-  // @TODO remove?
+  // @TODO change?
 }

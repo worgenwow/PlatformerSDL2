@@ -47,30 +47,38 @@ bool Window::create(const char* title, int width, int height)
     return true;
 }
 
-void Window::renderRect(SDL_Rect& rect, SDL_Color& color, bool filled)
+void Window::renderRect(SDL_Rect* rect, SDL_Color& color, bool filled)
 {
     SDL_SetRenderDrawColor(mRenderer, color.r, color.g, color.b, color.a);
     if(filled)
     {
-        SDL_RenderFillRect(mRenderer, &rect);
+        SDL_RenderFillRect(mRenderer, rect);
     }
     else
     {
-        SDL_RenderDrawRect(mRenderer, &rect);
+        SDL_RenderDrawRect(mRenderer, rect);
     }
 }
 
-void Window::renderEntity(Entity& entity)
+void Window::renderEntity(Entity* entity)
 {
-    SDL_Rect renderQuad;
-    renderQuad.x = (int) entity.getPosition().x;
-    renderQuad.y = (int) entity.getPosition().y;
+    Sprite* sprite = entity->getSprite();
+    if(sprite == NULL)
+    {
+        SDL_Rect* rect = entity->getCollider()->getRect();
+        SDL_Color color = {0xFF,0xFF,0xFF,0xFF};
+        renderRect(rect, color, true);
+    }
+    else
+    {   
+        SDL_Rect renderQuad;
+        renderQuad.x = (int) entity->getPosition().x;
+        renderQuad.y = (int) entity->getPosition().y;
+        renderQuad.w = sprite->getWidth();
+        renderQuad.h = sprite->getHeight();
 
-    Sprite* sprite = entity.getSprite();
-    renderQuad.w = sprite->getWidth();
-    renderQuad.h = sprite->getHeight();
-
-    SDL_RenderCopy(mRenderer, sprite->getTexture(), NULL, &renderQuad);
+        SDL_RenderCopy(mRenderer, sprite->getTexture(), NULL, &renderQuad);
+    }
 }
 
 void Window::clearRender()

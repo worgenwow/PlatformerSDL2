@@ -12,22 +12,32 @@ class Entity
   private:
     // position at top left corner of entity
     Vector2 mPosition;
-    Sprite mSprite;
+    Sprite* mSprite;
+    int mMass = 1;
+
+    void freeColliders();
+    void freeSprite();
+    void updateColliderPos();
+    void updateVelocity(GameData& gameData, float timeStep);
+    void updatePos(GameData& gameData, float timeStep);
+    
   protected:
     Vector2 mVelocity; 
-    Collider mCollider;
-    Collider mFloorCheck;
+    Collider* mCollider;
+    Collider* mFloorCheck;
     bool mGravityEnabled;
     bool mTouchingFloor;
     
-    void updateCollider();
+    virtual Vector2 getForce(GameData& gameData);
+
   public:
     Entity();
     Entity(Vector2 position, bool gravityEnabled);
     ~Entity();
     bool loadSprite(SDL_Renderer* renderer, const char* path, SDL_Color& colorKey);
-    void addCollider(Collider& collider);
-    void updatePos(GameData& gameData, float timeStep);
+    void addCollider(int width, int height);
+    void colliderFromSprite();
+    void update(GameData& gameData, float timeStep);
     Vector2 getPosition();
     Sprite* getSprite();
     Collider* getCollider();

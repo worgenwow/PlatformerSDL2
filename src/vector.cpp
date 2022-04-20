@@ -32,6 +32,12 @@ Vector2 Vector2::operator * (float f)
     return result;
 }
 
+Vector2 Vector2::operator / (float f)
+{
+    Vector2 result{x/f, y/f};
+    return result;
+}
+
 Vector2& Vector2::operator += (const Vector2& other)
 {
     x+=other.x;

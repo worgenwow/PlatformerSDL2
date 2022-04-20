@@ -15,55 +15,122 @@ Entity::Entity(Vector2 position, bool gravityEnabled)
   mVelocity = {0,0};
   mGravityEnabled = gravityEnabled;
   mTouchingFloor = false;
+
+  mSprite = NULL;
+  mFloorCheck = NULL;
+  mCollider = NULL;
 }
 
 Entity::~Entity()
 {
+  if(mCollider!=NULL)
+  {
+    freeColliders();
+  }
+  if(mSprite!=NULL)
+  {
+    freeSprite();
+  }
+}
 
+void Entity::freeColliders()
+{ 
+  delete mCollider;
+  mCollider = NULL;
+
+  if(mGravityEnabled)
+  {
+    delete mFloorCheck;
+    mFloorCheck = NULL;
+  }
+}
+
+void Entity::freeSprite()
+{
+  delete mSprite;
+  mSprite = NULL;
 }
 
 bool Entity::loadSprite(SDL_Renderer* renderer, const char* path, SDL_Color& colorKey)
 {
-  return mSprite.loadFromFile(renderer, path, colorKey);
+  if(mSprite!=NULL)
+  {
+    freeSprite();
+  }
+
+  mSprite =  new Sprite();
+  return mSprite->loadFromFile(renderer, path, colorKey);
 }
 
-void Entity::addCollider(Collider& collider) // @TODO make sure collider doesn't deallocate on function end
+// add or replace collider
+void Entity::addCollider(int width, int height)
 {
-  mCollider = collider;
+  if(mCollider!=NULL)
+  {
+    freeColliders();
+  }
 
-  SDL_Rect* entityCollider = mCollider.getRect();
-  SDL_Rect floorCheck;
-  floorCheck.x = entityCollider->x;
-  floorCheck.w = entityCollider->w;
-  floorCheck.y = entityCollider->y + entityCollider->h;
-  floorCheck.h = 4;
+  mCollider = new Collider({0,0,width,height});
 
-  mFloorCheck = Collider(floorCheck);
+  if(mGravityEnabled)
+  {
+    SDL_Rect floorCheck{0,0,width,1};
+    mFloorCheck = new Collider(floorCheck);
+  }
+  updateColliderPos();
+}
+
+void Entity::colliderFromSprite()
+{
+  int width = mSprite->getWidth();
+  int height = mSprite->getHeight();
+
+  addCollider(width, height);
+}
+
+Vector2 Entity::getForce(GameData& gameData)
+{
+  Vector2 force = {0,0};
+  if(mGravityEnabled)
+  {
+    force.y += gameData.gravity*mMass;
+  }
+
+  return force;
+}
+
+void Entity::update(GameData& gameData, float timeStep)
+{
+  mTouchingFloor = mFloorCheck->checkAllCollisions(gameData) != NULL;
+
+  updateVelocity(gameData, timeStep);
+  updatePos(gameData, timeStep);
+}
+
+void Entity::updateVelocity(GameData& gameData, float timeStep)
+{
+  Vector2 velocityChange = (getForce(gameData)/mMass)*timeStep;
+  mVelocity += velocityChange;
+
+  if(mTouchingFloor && mVelocity.y > 0)
+  {
+    mVelocity.y = 0;
+  }
 }
 
 void Entity::updatePos(GameData& gameData, float timeStep)
 {
-  mTouchingFloor = mFloorCheck.checkAllCollisions(gameData) != NULL;
-  if(mGravityEnabled && !mTouchingFloor)
-  {
-    mVelocity.y += gameData.gravity*timeStep;
-  }else if(mTouchingFloor && mVelocity.y>0)
-  {
-    mVelocity.y = 0;
-  }
-
-  Vector2 displacement = mVelocity*timeStep;
+  Vector2 displacement = mVelocity*timeStep; // velocity * time between frame (in seconds) = displacement
   if(!displacement.isZero())
   {
     mPosition += displacement;
-    updateCollider();
+    updateColliderPos();
 
-    Collider* hitCollider = mCollider.checkAllCollisions(gameData);
-    if(hitCollider != NULL)
+    Collider* hitCollider = mCollider->checkAllCollisions(gameData);
+    if(hitCollider != NULL) //@TODO fix this so that entity will land but can still move
     {
       mPosition -= displacement;
-      // mPosition.y = hitCollider->getRect()->y-mCollider.getRect()->h;
-      updateCollider();
+      updateColliderPos();
     }
   }
 }
@@ -75,16 +142,21 @@ Vector2 Entity::getPosition()
 
 Sprite* Entity::getSprite()
 {
-  return &mSprite;
+  return mSprite;
 }
 
 Collider* Entity::getCollider()
 {
-  return &mCollider;
+  return mCollider;
 }
 
-void Entity::updateCollider()
+void Entity::updateColliderPos()
 {
-  mCollider.updateColliderPos(mPosition);
-  mFloorCheck.updateColliderPos({mPosition.x, mPosition.y+32});
+  if(mCollider==NULL){return;}
+  mCollider->updateColliderPos(mPosition);
+
+  if(mGravityEnabled)
+  {
+    mFloorCheck->updateColliderPos({mPosition.x, mPosition.y+32});
+  }
 }

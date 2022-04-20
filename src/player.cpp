@@ -1,23 +1,30 @@
 #include <player.h>
 #include <keyData.h>
 
+#include <stdio.h>
 Player::Player(Vector2 position, bool gravityEnabled) : Entity(position, gravityEnabled)
 {
 
 }
 
-void Player::updateVelocity(KeyData& KeyData)
+Vector2 Player::getForce(GameData& gameData)
 {
-  if(KeyData.dKeyDown)
+  Vector2 force = Entity::getForce(gameData);
+
+  if(keyData.dKeyDown)
   {
-    mVelocity.x = mMovementSpeed;
+    force.x += mMovementSpeed;
   }
-  else if(KeyData.aKeyDown)
+  else if(keyData.aKeyDown)
   {
-    mVelocity.x = -mMovementSpeed;
+    force.x -= mMovementSpeed;
   }
-  else
+
+  if(keyData.wKeyDown)
   {
-    mVelocity.x = 0;
+    if(mTouchingFloor && mVelocity.y>=0)
+      force.y = -2000;
   }
+
+  return force;
 }
