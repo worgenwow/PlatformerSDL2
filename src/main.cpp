@@ -8,6 +8,7 @@
 #include <entity.h>
 #include <gameData.h>
 #include <player.h>
+#include <platform.h>
 // Screen dimension constants
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
@@ -89,8 +90,11 @@ void handleMovement(GameData& gameData)
 	float timeStep = 0;
 	timeStep = gameData.stepTimer->getTicks()/1000.f;
 
-	gameData.entities[PLAYER]->update(gameData, timeStep);
-
+	for (int i = 0; i < gameData.entityAmount; i++)
+	{
+		gameData.entities[i]->update(gameData, timeStep);
+	}
+	
 	gameData.stepTimer->Start();
 }
 
@@ -100,7 +104,10 @@ void handleRendering(GameData& gameData)
 	SDL_Color white = {0xFF, 0xFF, 0xFF, 0xFF};
 
 	gameData.window->clearRender();
-	gameData.window->renderEntity(gameData.entities[FLOOR]);
+	for (int i = 1; i < gameData.entityAmount; i++)
+	{
+		gameData.window->renderEntity(gameData.entities[i]);
+	}
 	gameData.window->renderEntity(gameData.entities[PLAYER]);
 	gameData.window->updateRender();
 }
@@ -112,8 +119,6 @@ void initEntities(GameData& gameData)
 	// Player entity
 	gameData.entities[PLAYER]->loadSprite(gameData.window->getRenderer(), "Assets/player2.png", white);
 	gameData.entities[PLAYER]->colliderFromSprite();
-
-	gameData.entities[FLOOR]->addCollider(SCREEN_WIDTH, 100);
 }
 
 void gameLoop(Window* window)
@@ -122,16 +127,22 @@ void gameLoop(Window* window)
 	SDL_Event e;
 	KeyData keyData;
 
-	const int gravity = 30;
+	const int gravity = 200;
 	Timer stepTimer;
+
+	// remember to change setEntityAmount in <gameData.h>
 	Player player({SCREEN_WIDTH/2,SCREEN_HEIGHT/2}, true, gravity);
-	Entity floor({0,SCREEN_HEIGHT-100}, false, true);
+	Platform floor({0,SCREEN_HEIGHT-100,SCREEN_WIDTH,100});
+
+	int width = 20, height = 10;
+	Platform platform1({370, 360, width, height});
+	Platform platform2({370+width*4, 360-24, width, height});
 
 	GameData gameData
 	{
 		window,
 		&stepTimer,
-		{&player, &floor},
+		{&player, &floor, &platform1, &platform2},
 		gravity,
 	};
 

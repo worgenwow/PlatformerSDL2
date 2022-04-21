@@ -65,7 +65,7 @@ void Window::renderEntity(Entity* entity)
     Sprite* sprite = entity->getSprite();
     if(sprite == NULL)
     {
-        SDL_Rect* rect = entity->getCollider()->getRect();
+        SDL_Rect* rect = entity->getCollider()->getAABB();
         SDL_Color color = {0xFF,0xFF,0xFF,0xFF};
         renderRect(rect, color, true);
     }

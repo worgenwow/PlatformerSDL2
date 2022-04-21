@@ -9,7 +9,11 @@ void Player::setImpulse(int jumpHeight, int gravity)
 
 Player::Player(Vector2 position, bool gravityEnabled, int gravity) : Entity(position, gravityEnabled, false)
 {
-  int jumpHeight = 16;
+  mMovementForce = 1000;
+  mMaxSpeed = 100;
+  mMinSpeed = 5;
+  int jumpHeight = 32;
+
   setImpulse(jumpHeight, gravity);
 }
 
@@ -19,11 +23,25 @@ Vector2 Player::getForce(GameData& gameData, float timeStep)
 
   if(keyData.dKeyDown)
   {
-    force.x += mMovementSpeed;
+    force.x += mMovementForce;
+    mMoving = true;
   }
   else if(keyData.aKeyDown)
   {
-    force.x -= mMovementSpeed;
+    force.x -= mMovementForce;
+    mMoving = true;
+  }
+  else // if not moving at all slow player down
+  {
+    mMoving = false;
+    if(mVelocity.x>0)
+    {
+      force.x -= pow(mVelocity.x,2)/2;
+    }
+    else if(mVelocity.x<0)
+    {
+      force.x += pow(mVelocity.x,2)/2;
+    }
   }
 
   if(keyData.wKeyDown)

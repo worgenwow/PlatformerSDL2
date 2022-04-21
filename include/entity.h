@@ -13,22 +13,27 @@ class Entity
     // position at top left corner of entity
     Vector2 mPosition;
     Sprite* mSprite;
-    
 
     void freeColliders();
     void freeSprite();
     void updateColliderPos();
     void updateVelocity(GameData& gameData, float timeStep);
     void updatePos(GameData& gameData, float timeStep);
+    void resetX(SDL_Rect* hitRect, SDL_Rect* rect, bool right);
+    void resetY(SDL_Rect* hitRect, SDL_Rect* rect, bool down);
+    void resetPos(Collider* hitCollider, const int prevX, const int prevY);
     
   protected:
     Vector2 mVelocity; 
     Collider* mCollider;
     Collider* mFloorCheck;
     int mMass = 1;
+    int mMaxSpeed;
+    int mMinSpeed;
     bool mGravityEnabled;
     bool mTouchingFloor;
     bool mIsStatic;
+    bool mMoving;
     
     virtual Vector2 getForce(GameData& gameData, float timeStep);
 

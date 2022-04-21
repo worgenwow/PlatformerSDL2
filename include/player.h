@@ -6,7 +6,7 @@
 class Player: public Entity
 {
   private:
-    int mMovementSpeed = 100;
+    int mMovementForce;
     float mJumpImpulse;
 
     Vector2 getForce(GameData& gameData, float timeStep) override;

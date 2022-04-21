@@ -53,18 +53,18 @@ void Collider::addIgnoredCollider(Collider* collider)
 
 bool Collider::checkCollision(Collider* collider)
 {
-  SDL_Rect* otherRect = collider->getRect();
+  SDL_Rect* otherRect = collider->getAABB();
   bool colliding = false;
 
   // checks if it's colliding in x-axis through AABB
-  colliding = mRect.x + mRect.w >= otherRect->x && otherRect->x + otherRect->w >= mRect.x;
+  colliding = mRect.x + mRect.w > otherRect->x && otherRect->x + otherRect->w > mRect.x;
   if(!colliding)
   {
     return colliding;
   }
 
   // AABB on y-axis
-  colliding = mRect.y + mRect.h >= otherRect->y && otherRect->y + otherRect->h >= mRect.y;
+  colliding = mRect.y + mRect.h > otherRect->y && otherRect->y + otherRect->h > mRect.y;
   return colliding;
 }
 
@@ -104,8 +104,7 @@ Collider* Collider::checkAllCollisions(GameData& gameData)
   return currentCollider;
 }
 
-SDL_Rect* Collider::getRect()
+SDL_Rect* Collider::getAABB()
 {
   return &mRect;
-  // @TODO change?
 }

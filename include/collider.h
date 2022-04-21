@@ -20,5 +20,5 @@ class Collider
     void updateColliderPos(Vector2 position);
     bool isIgnored(Collider* collider);
     Collider* checkAllCollisions(GameData& gameData);
-    SDL_Rect* getRect();
+    SDL_Rect* getAABB();
 };
