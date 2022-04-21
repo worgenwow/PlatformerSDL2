@@ -9,12 +9,13 @@
 
 #include <stdio.h>
 
-Entity::Entity(Vector2 position, bool gravityEnabled)
+Entity::Entity(Vector2 position, bool gravityEnabled, bool isStatic)
 {
   mPosition = position;
   mVelocity = {0,0};
   mGravityEnabled = gravityEnabled;
   mTouchingFloor = false;
+  mIsStatic = isStatic;
 
   mSprite = NULL;
   mFloorCheck = NULL;
@@ -76,6 +77,8 @@ void Entity::addCollider(int width, int height)
   {
     SDL_Rect floorCheck{0,0,width,1};
     mFloorCheck = new Collider(floorCheck);
+
+    mFloorCheck->addIgnoredCollider(mCollider);
   }
   updateColliderPos();
 }
@@ -88,7 +91,7 @@ void Entity::colliderFromSprite()
   addCollider(width, height);
 }
 
-Vector2 Entity::getForce(GameData& gameData)
+Vector2 Entity::getForce(GameData& gameData, float timeStep)
 {
   Vector2 force = {0,0};
   if(mGravityEnabled)
@@ -101,20 +104,24 @@ Vector2 Entity::getForce(GameData& gameData)
 
 void Entity::update(GameData& gameData, float timeStep)
 {
-  mTouchingFloor = mFloorCheck->checkAllCollisions(gameData) != NULL;
+  if(mGravityEnabled)
+    mTouchingFloor = mFloorCheck->checkAllCollisions(gameData) != NULL;
 
-  updateVelocity(gameData, timeStep);
-  updatePos(gameData, timeStep);
+  if(!mIsStatic)
+  {
+    updateVelocity(gameData, timeStep);
+    updatePos(gameData, timeStep);
+  }
 }
 
 void Entity::updateVelocity(GameData& gameData, float timeStep)
 {
-  Vector2 velocityChange = (getForce(gameData)/mMass)*timeStep;
+  Vector2 velocityChange = (getForce(gameData, timeStep)/mMass)*timeStep;
   mVelocity += velocityChange;
 
   if(mTouchingFloor && mVelocity.y > 0)
   {
-    mVelocity.y = 0;
+    mVelocity.y = 5;
   }
 }
 
@@ -129,7 +136,7 @@ void Entity::updatePos(GameData& gameData, float timeStep)
     Collider* hitCollider = mCollider->checkAllCollisions(gameData);
     if(hitCollider != NULL) //@TODO fix this so that entity will land but can still move
     {
-      mPosition -= displacement;
+      mPosition.y = hitCollider->getRect()->y - mSprite->getHeight();
       updateColliderPos();
     }
   }

@@ -1,15 +1,21 @@
 #include <player.h>
 #include <keyData.h>
+#include <math.h>
 
-#include <stdio.h>
-Player::Player(Vector2 position, bool gravityEnabled) : Entity(position, gravityEnabled)
+void Player::setImpulse(int jumpHeight, int gravity)
 {
-
+  mJumpImpulse = mMass*sqrt(2*jumpHeight*gravity);
 }
 
-Vector2 Player::getForce(GameData& gameData)
+Player::Player(Vector2 position, bool gravityEnabled, int gravity) : Entity(position, gravityEnabled, false)
 {
-  Vector2 force = Entity::getForce(gameData);
+  int jumpHeight = 16;
+  setImpulse(jumpHeight, gravity);
+}
+
+Vector2 Player::getForce(GameData& gameData, float timeStep)
+{
+  Vector2 force = Entity::getForce(gameData, timeStep);
 
   if(keyData.dKeyDown)
   {
@@ -23,7 +29,7 @@ Vector2 Player::getForce(GameData& gameData)
   if(keyData.wKeyDown)
   {
     if(mTouchingFloor && mVelocity.y>=0)
-      force.y = -2000;
+      force.y = -mJumpImpulse/timeStep;
   }
 
   return force;

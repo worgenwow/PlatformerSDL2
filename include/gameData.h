@@ -16,6 +16,6 @@ struct GameData
 	Window* window;
 	Timer* stepTimer;
 	Entity* entities[setEntityAmount];
+	const int gravity; // postive cause y is down
 	const int entityAmount = setEntityAmount;
-	const int gravity = 30; // postive cause y is down
 };

@@ -5,46 +5,79 @@
 #include <gameData.h>
 #include <entity.h>
 
-Collider::Collider(){}
+Collider::Collider()
+{
+  mIgnoredColliders = NULL;
+}
 
 Collider::~Collider()
 {
-
+  if(mIgnoredColliders != NULL)
+  {
+    delete mIgnoredColliders;
+  }
 }
 
-Collider::Collider(SDL_Rect collider)
+Collider::Collider(SDL_Rect rect)
 {
-  mCollider = collider;
+  mRect = rect;
+  mIgnoredColliders = NULL;
+  mIgnoreAmount = 0;
 }
 
 void Collider::updateColliderPos(Vector2 position)
 {
-  mCollider.x = (int) position.x;
-  mCollider.y = (int) position.y;
+  mRect.x = (int) position.x;
+  mRect.y = (int) position.y;
+}
+
+// add collider to ignore when checking for collision
+void Collider::addIgnoredCollider(Collider* collider)
+{
+  if(mIgnoredColliders == NULL)
+  {
+    mIgnoredColliders = new Collider*[1]{collider};
+    mIgnoreAmount = 1;
+  }
+  else
+  {
+    Collider** newArray = new Collider*[mIgnoreAmount+1];
+    memcpy(newArray, mIgnoredColliders, sizeof(Collider*)*mIgnoreAmount);
+    delete mIgnoredColliders;
+
+    mIgnoredColliders = newArray;
+    mIgnoredColliders[mIgnoreAmount] = collider; // because arrays start at 0
+    mIgnoreAmount++;
+  }
 }
 
 bool Collider::checkCollision(Collider* collider)
 {
-  SDL_Rect* rect = collider->getRect();
+  SDL_Rect* otherRect = collider->getRect();
   bool colliding = false;
 
-  if(mCollider.x>rect->x && mCollider.x<rect->x+rect->w)
+  // checks if it's colliding in x-axis through AABB
+  colliding = mRect.x + mRect.w >= otherRect->x && otherRect->x + otherRect->w >= mRect.x;
+  if(!colliding)
   {
-    colliding = true;
-  }
-  else if(mCollider.x+mCollider.w>rect->x && mCollider.x+mCollider.w<rect->x+rect->w)
-  {
-    colliding = true;
-  }
-  
-  if(mCollider.y>rect->y && mCollider.y<rect->y+rect->h){}
-  else if(mCollider.y+mCollider.h>rect->y && mCollider.y+mCollider.h<rect->y+rect->h){}
-  else
-  {
-    colliding = false;
+    return colliding;
   }
 
+  // AABB on y-axis
+  colliding = mRect.y + mRect.h >= otherRect->y && otherRect->y + otherRect->h >= mRect.y;
   return colliding;
+}
+
+bool Collider::isIgnored(Collider* collider)
+{
+  for (int i = 0; i < mIgnoreAmount; i++)
+  {
+    if(collider == mIgnoredColliders[i])
+    {
+      return true;
+    }
+  }
+  return false;
 }
 
 Collider* Collider::checkAllCollisions(GameData& gameData)
@@ -53,7 +86,7 @@ Collider* Collider::checkAllCollisions(GameData& gameData)
   for (int i = 0; i < gameData.entityAmount; i++)
   {
     currentCollider = gameData.entities[i]->getCollider();
-    if(currentCollider == this || currentCollider == NULL)
+    if(currentCollider == this || currentCollider == NULL || isIgnored(currentCollider))
     {
       continue;
     }
@@ -73,6 +106,6 @@ Collider* Collider::checkAllCollisions(GameData& gameData)
 
 SDL_Rect* Collider::getRect()
 {
-  return &mCollider;
+  return &mRect;
   // @TODO change?
 }

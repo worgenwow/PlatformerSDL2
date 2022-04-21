@@ -111,7 +111,7 @@ void initEntities(GameData& gameData)
 
 	// Player entity
 	gameData.entities[PLAYER]->loadSprite(gameData.window->getRenderer(), "Assets/player2.png", white);
-	gameData.entities[PLAYER]->addCollider(32,32);
+	gameData.entities[PLAYER]->colliderFromSprite();
 
 	gameData.entities[FLOOR]->addCollider(SCREEN_WIDTH, 100);
 }
@@ -122,15 +122,17 @@ void gameLoop(Window* window)
 	SDL_Event e;
 	KeyData keyData;
 
+	const int gravity = 30;
 	Timer stepTimer;
-	Player player({0,0}, true);
-	Entity floor({0,SCREEN_HEIGHT-100}, false);
+	Player player({SCREEN_WIDTH/2,SCREEN_HEIGHT/2}, true, gravity);
+	Entity floor({0,SCREEN_HEIGHT-100}, false, true);
 
 	GameData gameData
 	{
 		window,
 		&stepTimer,
 		{&player, &floor},
+		gravity,
 	};
 
 	initEntities(gameData);
