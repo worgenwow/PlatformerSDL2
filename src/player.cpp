@@ -2,9 +2,19 @@
 #include <keyData.h>
 #include <math.h>
 
-void Player::setImpulse(int jumpHeight, int gravity)
+void Player::setJumpImpulse(int initialJumpHeight, int gravity)
 {
-  mJumpImpulse = mMass*sqrt(2*jumpHeight*gravity);
+  mJumpImpulse = mMass*sqrt(2*initialJumpHeight*gravity);
+}
+
+// solves a quadratic equation to find continous force needed to reach full jump height
+void Player::setJumpForce(int extraHeight, int gravity, int time)
+{
+  float v = sqrt(2*gravity*extraHeight);
+  float a = pow(time,2);
+  float b = 2 * v * time - gravity * a;
+  float c = -2 * gravity * extraHeight;
+  mJumpForce = mMass * (-b + sqrt(pow(b,2) - 4*a*c)) / (2*a);
 }
 
 Player::Player(Vector2 position, bool gravityEnabled, int gravity) : Entity(position, gravityEnabled, false)
@@ -13,8 +23,12 @@ Player::Player(Vector2 position, bool gravityEnabled, int gravity) : Entity(posi
   mMaxSpeed = 100;
   mMinSpeed = 5;
   int jumpHeight = 32;
+  int initialJumpHeight = 16;
+  mJumpTime = 1;
+  mCurrentJumpTime = mJumpTime;
 
-  setImpulse(jumpHeight, gravity);
+  setJumpImpulse(initialJumpHeight, gravity);
+  setJumpForce(jumpHeight - initialJumpHeight, gravity, mJumpTime);
 }
 
 Vector2 Player::getForce(GameData& gameData, float timeStep)
@@ -47,7 +61,18 @@ Vector2 Player::getForce(GameData& gameData, float timeStep)
   if(keyData.wKeyDown)
   {
     if(mTouchingFloor && mVelocity.y>=0)
-      force.y = -mJumpImpulse/timeStep;
+    {
+      force.y -= mJumpImpulse/timeStep;
+      mCurrentJumpTime = 0;
+    }
+    else
+    {
+      if(mCurrentJumpTime < mJumpTime)
+      {
+        force.y -= mJumpForce;
+        mCurrentJumpTime += timeStep;
+      }
+    }
   }
 
   return force;
