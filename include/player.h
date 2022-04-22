@@ -14,7 +14,7 @@ class Player: public Entity
 
     Vector2 getForce(GameData& gameData, float timeStep) override;
     void setJumpImpulse(int initialJumpHeight, int gravity);
-    void setJumpForce(int extraHeight, int gravity, int time);
+    void setJumpForce(int extraHeight, int gravity, float time);
   public:
     KeyData keyData;
     Player(Vector2 position, bool gravityEnabled, int gravity);

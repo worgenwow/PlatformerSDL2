@@ -8,13 +8,14 @@ void Player::setJumpImpulse(int initialJumpHeight, int gravity)
 }
 
 // solves a quadratic equation to find continous force needed to reach full jump height
-void Player::setJumpForce(int extraHeight, int gravity, int time)
+void Player::setJumpForce(int extraHeight, int gravity, float time)
 {
+  // https://fenomas.com/2016/07/game-jumping-physics/ for explanation
   float v = sqrt(2*gravity*extraHeight);
   float a = pow(time,2);
   float b = 2 * v * time - gravity * a;
   float c = -2 * gravity * extraHeight;
-  mJumpForce = mMass * (-b + sqrt(pow(b,2) - 4*a*c)) / (2*a);
+  mJumpForce = fabs(mMass * (-b + sqrt(pow(b,2) - 4*a*c)) / (2*a));
 }
 
 Player::Player(Vector2 position, bool gravityEnabled, int gravity) : Entity(position, gravityEnabled, false)
@@ -24,11 +25,11 @@ Player::Player(Vector2 position, bool gravityEnabled, int gravity) : Entity(posi
   mMinSpeed = 5;
   int jumpHeight = 32;
   int initialJumpHeight = 16;
-  mJumpTime = 1;
+  mJumpTime = 0.5;
   mCurrentJumpTime = mJumpTime;
 
-  setJumpImpulse(initialJumpHeight, gravity);
   setJumpForce(jumpHeight - initialJumpHeight, gravity, mJumpTime);
+  setJumpImpulse(initialJumpHeight, gravity);
 }
 
 Vector2 Player::getForce(GameData& gameData, float timeStep)

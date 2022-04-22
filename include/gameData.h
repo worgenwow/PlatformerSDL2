@@ -8,7 +8,7 @@ enum entityNames
 {
 	PLAYER,
 };
-const int setEntityAmount = 4;
+const int setEntityAmount = 5;
 
 struct GameData
 {

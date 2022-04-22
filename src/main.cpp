@@ -131,18 +131,19 @@ void gameLoop(Window* window)
 	Timer stepTimer;
 
 	// remember to change setEntityAmount in <gameData.h>
-	Player player({SCREEN_WIDTH/2,SCREEN_HEIGHT/2}, true, gravity);
+	Player player({SCREEN_WIDTH/2,SCREEN_HEIGHT-132}, true, gravity);
 	Platform floor({0,SCREEN_HEIGHT-100,SCREEN_WIDTH,100});
 
 	int width = 20, height = 10;
 	Platform platform1({370, 360, width, height});
 	Platform platform2({370+width*4, 360-24, width, height});
+	Platform platform3({370, 360-46, width, height});
 
 	GameData gameData
 	{
 		window,
 		&stepTimer,
-		{&player, &floor, &platform1, &platform2},
+		{&player, &floor, &platform1, &platform2, &platform3},
 		gravity,
 	};
 

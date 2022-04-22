@@ -150,11 +150,13 @@ void Entity::updatePos(GameData& gameData, float timeStep)
   Vector2 displacement = mVelocity*timeStep; // velocity * time between frame (in seconds) = displacement
   if(displacement.isZero()){return;}
 
+  // moves player
   const int prevX = mCollider->getAABB()->x;
   const int prevY = mCollider->getAABB()->y;
   mPosition += displacement;
   updateColliderPos();
 
+  // checking collisions
   Collider* hitCollider = mCollider->checkAllCollisions(gameData);
   if(hitCollider != NULL)
   {
@@ -162,14 +164,15 @@ void Entity::updatePos(GameData& gameData, float timeStep)
     updateColliderPos();
   }
 
+  // checks if entity is going off level border
   if(mPosition.x<0)
   {
     mPosition.x = 0;
     mVelocity.x = 0;
   }
-  else if(mPosition.x+mSprite->getWidth()>gameData.window->getWidth())
+  else if(mPosition.x+mCollider->getAABB()->w > gameData.window->getWidth())
   {
-    mPosition.x = gameData.window->getWidth() - mSprite->getWidth();
+    mPosition.x = gameData.window->getWidth() - mCollider->getAABB()->w;
     mVelocity.x = 0;
   }
 }
