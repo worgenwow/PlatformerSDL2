@@ -13,6 +13,8 @@ class Entity
     // position at top left corner of entity
     Vector2 mPosition;
     Sprite* mSprite;
+    int mXOffset;
+    int mYOffset;
 
     void freeColliders();
     void freeSprite();
@@ -42,10 +44,12 @@ class Entity
     Entity(Vector2 position, bool gravityEnabled, bool isStatic);
     ~Entity();
     bool loadSprite(SDL_Renderer* renderer, const char* path, SDL_Color& colorKey);
-    void addCollider(int width, int height);
+    void addCollider(int width, int height, int xOffset, int yOffset);
     void colliderFromSprite();
     void update(GameData& gameData, float timeStep);
     Vector2 getPosition();
     Sprite* getSprite();
     Collider* getCollider();
+    int getXOffset();
+    int getYOffset();
 };

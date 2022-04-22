@@ -106,9 +106,9 @@ void handleRendering(GameData& gameData)
 	gameData.window->clearRender();
 	for (int i = 1; i < gameData.entityAmount; i++)
 	{
-		gameData.window->renderEntity(gameData.entities[i]);
+		gameData.window->renderEntity(gameData.entities[i], false);
 	}
-	gameData.window->renderEntity(gameData.entities[PLAYER]);
+	gameData.window->renderEntity(gameData.entities[PLAYER], false);
 	gameData.window->updateRender();
 }
 
@@ -118,7 +118,7 @@ void initEntities(GameData& gameData)
 
 	// Player entity
 	gameData.entities[PLAYER]->loadSprite(gameData.window->getRenderer(), "Assets/player2.png", white);
-	gameData.entities[PLAYER]->colliderFromSprite();
+	gameData.entities[PLAYER]->addCollider(14, 32, 9, 0);
 }
 
 void gameLoop(Window* window)

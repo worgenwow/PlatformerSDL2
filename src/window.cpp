@@ -60,20 +60,27 @@ void Window::renderRect(SDL_Rect* rect, SDL_Color& color, bool filled)
     }
 }
 
-void Window::renderEntity(Entity* entity)
+void Window::renderEntity(Entity* entity, bool renderColliders)
 {
+    if(renderColliders)
+    {
+        SDL_Rect* collider = entity->getCollider()->getAABB();
+        SDL_Color green = {0x00, 0xFF, 0x00, 0xFF};
+        renderRect(collider, green, false);
+    }
+
     Sprite* sprite = entity->getSprite();
     if(sprite == NULL)
     {
         SDL_Rect* rect = entity->getCollider()->getAABB();
-        SDL_Color color = {0xFF,0xFF,0xFF,0xFF};
-        renderRect(rect, color, true);
+        SDL_Color defaultColor = {0xFF,0xFF,0xFF,0xFF};
+        renderRect(rect, defaultColor, true);
     }
     else
     {   
         SDL_Rect renderQuad;
-        renderQuad.x = (int) entity->getPosition().x;
-        renderQuad.y = (int) entity->getPosition().y;
+        renderQuad.x = (int) entity->getPosition().x - entity->getXOffset();
+        renderQuad.y = (int) entity->getPosition().y - entity->getYOffset();
         renderQuad.w = sprite->getWidth();
         renderQuad.h = sprite->getHeight();
 

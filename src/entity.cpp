@@ -17,6 +17,8 @@ Entity::Entity(Vector2 position, bool gravityEnabled, bool isStatic)
   mTouchingFloor = false;
   mIsStatic = isStatic;
   mMoving = false;
+  mXOffset = 0;
+  mYOffset = 0;
 
   mSprite = NULL;
   mFloorCheck = NULL;
@@ -65,15 +67,18 @@ bool Entity::loadSprite(SDL_Renderer* renderer, const char* path, SDL_Color& col
 }
 
 // add or replace collider
-void Entity::addCollider(int width, int height)
+void Entity::addCollider(int width, int height, int xOffset, int yOffset)
 {
   if(mCollider!=NULL)
   {
     freeColliders();
   }
+  
+  mXOffset = xOffset;
+  mYOffset = yOffset;
+  mPosition = {mPosition.x + xOffset, mPosition.y + yOffset};
 
   mCollider = new Collider({0,0,width,height});
-
   if(mGravityEnabled)
   {
     SDL_Rect floorCheck{0,0,width,1};
@@ -89,7 +94,7 @@ void Entity::colliderFromSprite()
   int width = mSprite->getWidth();
   int height = mSprite->getHeight();
 
-  addCollider(width, height);
+  addCollider(width, height, 0, 0);
 }
 
 Vector2 Entity::getForce(GameData& gameData, float timeStep)
@@ -219,7 +224,19 @@ void Entity::resetPos(Collider* hitCollider, const int prevX, const int prevY)
     return;
   }
 
-  float slope = (float)yChange/(float)xChange;
+  // was already colliding on x
+  if(prevX + rect->w > hitRect->x && hitRect->x + hitRect->w > prevX)
+  {
+    resetY(hitRect, rect, down);
+    return;
+  }
+  if(prevY + rect->h > hitRect->y && hitRect->y + hitRect->h > prevY)
+  {
+    resetX(hitRect, rect, right);
+    return;
+  }
+
+  float slope = (float)yChange/(float)xChange; // working out the line of collision
   int xPos = rect->x;
   int yPos = rect->y;
   if(right) // collision originated from right side
@@ -255,7 +272,7 @@ void Entity::resetPos(Collider* hitCollider, const int prevX, const int prevY)
       return;
     }
   }
-
+  // now checking if it y first
   if(down)
   {
     float rectIntersect = (hitY-yIntersect)/slope;
@@ -289,6 +306,16 @@ Sprite* Entity::getSprite()
 Collider* Entity::getCollider()
 {
   return mCollider;
+}
+
+int Entity::getXOffset()
+{
+  return mXOffset;
+}
+
+int Entity::getYOffset()
+{
+  return mYOffset;
 }
 
 void Entity::updateColliderPos()
