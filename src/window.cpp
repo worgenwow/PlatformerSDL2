@@ -62,6 +62,7 @@ void Window::renderRect(SDL_Rect* rect, SDL_Color& color, bool filled)
 
 void Window::renderEntity(Entity* entity, bool renderColliders)
 {
+    // debugging feature to render green border to show colliders
     if(renderColliders)
     {
         SDL_Rect* collider = entity->getCollider()->getAABB();
@@ -72,15 +73,16 @@ void Window::renderEntity(Entity* entity, bool renderColliders)
     Sprite* sprite = entity->getSprite();
     if(sprite == NULL)
     {
+        // if there's no sprite render the collider
         SDL_Rect* rect = entity->getCollider()->getAABB();
-        SDL_Color defaultColor = {0xFF,0xFF,0xFF,0xFF};
+        SDL_Color defaultColor = {0x96,0x4B,0x00,0xFF};
         renderRect(rect, defaultColor, true);
     }
     else
     {   
         SDL_Rect renderQuad;
-        renderQuad.x = (int) entity->getPosition().x - entity->getXOffset();
-        renderQuad.y = (int) entity->getPosition().y - entity->getYOffset();
+        renderQuad.x = (int) entity->getPosition()->x - entity->getXOffset();
+        renderQuad.y = (int) entity->getPosition()->y - entity->getYOffset();
         renderQuad.w = sprite->getWidth();
         renderQuad.h = sprite->getHeight();
 

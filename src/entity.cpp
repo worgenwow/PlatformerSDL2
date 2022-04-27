@@ -141,7 +141,7 @@ void Entity::updateVelocity(GameData& gameData, float timeStep)
 
   if(mTouchingFloor && mVelocity.y > 0)
   {
-    mVelocity.y = 0; // apply a slight downward speed so that it does actually touch the floor
+    mVelocity.y = 0;
   }
 }
 
@@ -150,9 +150,11 @@ void Entity::updatePos(GameData& gameData, float timeStep)
   Vector2 displacement = mVelocity*timeStep; // velocity * time between frame (in seconds) = displacement
   if(displacement.isZero()){return;}
 
-  // moves player
+  // gets current position in case we collide
   const int prevX = mCollider->getAABB()->x;
   const int prevY = mCollider->getAABB()->y;
+
+  // moves player
   mPosition += displacement;
   updateColliderPos();
 
@@ -215,7 +217,7 @@ void Entity::resetPos(Collider* hitCollider, const int prevX, const int prevY)
   bool down = yChange > 0;
 
   if(xChange == 0 && yChange == 0){return;}
-  if(xChange == 0) // means had to collide on y
+  if(xChange == 0) // thus had to collide on y
   {
     resetY(hitRect, rect, down);
     return;
@@ -227,7 +229,7 @@ void Entity::resetPos(Collider* hitCollider, const int prevX, const int prevY)
     return;
   }
 
-  // was already colliding on x
+  // if it was already colliding on x, means collision must be on y
   if(prevX + rect->w > hitRect->x && hitRect->x + hitRect->w > prevX)
   {
     resetY(hitRect, rect, down);
@@ -240,8 +242,8 @@ void Entity::resetPos(Collider* hitCollider, const int prevX, const int prevY)
   }
 
   float slope = (float)yChange/(float)xChange; // working out the line of collision
-  int xPos = rect->x;
-  int yPos = rect->y;
+  int xPos = rect->x; // coordinates of corner
+  int yPos = rect->y; // that's closest to hit object
   if(right) // collision originated from right side
   {
     xPos += rect->w;
@@ -256,12 +258,15 @@ void Entity::resetPos(Collider* hitCollider, const int prevX, const int prevY)
   int hitY = hitRect->y;
   int hitW = hitRect->w;
   int hitH = hitRect->h;
-  // check if hit x first
-  if(right)
+
+  // check if line of collision hit side first
+  if(right) // check direction so we know what side to check
   {
+    // we know x value of closest side, find y value at that point
     float rectIntersect = hitX*slope + yIntersect;
-    if(hitY <= rectIntersect && rectIntersect <= hitY + hitH)
+    if(hitY <= rectIntersect && rectIntersect <= hitY + hitH) // see if that y value is within the object
     {
+      // if it is within the object it collided with side first
       resetX(hitRect, rect, right);
       return;
     }
@@ -275,9 +280,11 @@ void Entity::resetPos(Collider* hitCollider, const int prevX, const int prevY)
       return;
     }
   }
-  // now checking if it y first
+
+  // now checking if it hit top or bottom first
   if(down)
   {
+    // similar to whether hit side first, but we work out x value
     float rectIntersect = (hitY-yIntersect)/slope;
     if(hitX <= rectIntersect && rectIntersect <= hitX + hitW)
     {
@@ -296,9 +303,9 @@ void Entity::resetPos(Collider* hitCollider, const int prevX, const int prevY)
   }
 }
 
-Vector2 Entity::getPosition()
+Vector2* Entity::getPosition()
 {
-  return mPosition;
+  return &mPosition;
 }
 
 Sprite* Entity::getSprite()

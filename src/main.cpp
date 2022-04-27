@@ -13,7 +13,7 @@
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
 
-// Returns false on error
+// initiliase sdl and libraries returns false on error
 bool init(Window* window)
 {
 	if(SDL_Init(SDL_INIT_VIDEO)<0)
@@ -59,9 +59,6 @@ void keyEvents(GameData& gameData, SDL_Keycode keyCode, bool keyDown)
 		case SDLK_a:
 			player->keyData.aKeyDown = keyDown;
 			break;
-		case SDLK_s:
-			player->keyData.sKeyDown = keyDown;
-			break;
 	}
 }
 
@@ -101,19 +98,20 @@ void handleMovement(GameData& gameData)
 // handle all the rendering in the game
 void handleRendering(GameData& gameData)
 {
-	SDL_Color white = {0xFF, 0xFF, 0xFF, 0xFF};
-
 	gameData.window->clearRender();
 	for (int i = 1; i < gameData.entityAmount; i++)
 	{
 		gameData.window->renderEntity(gameData.entities[i], false);
 	}
+	// render player after so it can't get rendered behind anything
 	gameData.window->renderEntity(gameData.entities[PLAYER], false);
 	gameData.window->updateRender();
 }
 
+// 
 void initEntities(GameData& gameData)
 {
+	// colorkey for sprite loading
 	SDL_Color white = {0xFF, 0xFF, 0xFF, 0xFF};
 
 	// Player entity
@@ -123,14 +121,13 @@ void initEntities(GameData& gameData)
 
 void gameLoop(Window* window)
 {
-	bool exit = false;
-	SDL_Event e;
-	KeyData keyData;
-
 	const int gravity = 200;
 	Timer stepTimer;
 
-	// remember to change setEntityAmount in <gameData.h>
+	/*
+	sets up the scene's entities
+	remember to change setEntityAmount in gameData.h
+	*/
 	Player player({SCREEN_WIDTH/2,SCREEN_HEIGHT-132}, true, gravity);
 	Platform floor({0,SCREEN_HEIGHT-100,SCREEN_WIDTH,100});
 
@@ -139,6 +136,7 @@ void gameLoop(Window* window)
 	Platform platform2({370+width*4, 360-24, width, height});
 	Platform platform3({370, 360-46, width, height});
 
+	KeyData keyData;
 	GameData gameData
 	{
 		window,
@@ -149,6 +147,8 @@ void gameLoop(Window* window)
 
 	initEntities(gameData);
 
+	bool exit = false;
+	SDL_Event e;
 	while(!exit)
 	{
 		handleEvents(e, exit, gameData);
@@ -159,7 +159,7 @@ void gameLoop(Window* window)
 
 int main(int argc, char* args[])
 {
-	Window window({0x00, 0xFF, 0xFF, 0xFF}); // Constructs a window with white bg color
+	Window window({0x00, 0x00, 0xFF, 0xFF}); // Constructs a window with bg color
 	if(!init(&window))
 	{
 		printf("Failed to initialise.\n");

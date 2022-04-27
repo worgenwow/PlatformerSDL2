@@ -13,6 +13,7 @@ class Entity
     // position at top left corner of entity
     Vector2 mPosition;
     Sprite* mSprite;
+    // offsets for the sprite rendering
     int mXOffset;
     int mYOffset;
 
@@ -47,7 +48,7 @@ class Entity
     void addCollider(int width, int height, int xOffset, int yOffset);
     void colliderFromSprite();
     void update(GameData& gameData, float timeStep);
-    Vector2 getPosition();
+    Vector2* getPosition();
     Sprite* getSprite();
     Collider* getCollider();
     int getXOffset();

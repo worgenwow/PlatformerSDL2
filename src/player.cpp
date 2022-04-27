@@ -4,6 +4,8 @@
 
 void Player::setJumpImpulse(int initialJumpHeight, int gravity)
 {
+  /* uses kinetic energy and gravitational potential energy
+     to calculate impulse force required */
   mJumpImpulse = mMass*sqrt(2*initialJumpHeight*gravity);
 }
 
